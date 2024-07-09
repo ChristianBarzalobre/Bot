@@ -1,5 +1,3 @@
-
-
 // ==UserScript==
 // @name           Cross-linking DuckDuckgo <-> Google
 // @namespace      https://greasyfork.org/en/users/8981-buzz
@@ -16,166 +14,165 @@
 
 // Shamelessly ripped from https://greasyfork.org/en/scripts/8928-alternative-search-engines-2
 
-var SEARCH_ON = ' ';
-var SEARCH_ON_END = ' ';
-var LINK_BOX_ID = 'oeid-box';
-var ENGINES_SEPARATOR = ' • ';
+var SEARCH_ON = " ";
+var SEARCH_ON_END = " ";
+var LINK_BOX_ID = "oeid-box";
+var ENGINES_SEPARATOR = " • ";
 
 var ENGINES = {
-  Google: 'https://www.google.com/search?q=',
-  DuckDuckGo: 'https://duckduckgo.com/?q='
+  Google: "https://www.google.com/search?q=",
+  DuckDuckGo: "https://duckduckgo.com/?q=",
 };
 
 var PLACEHOLDER_SELECTORS = [
-  '#resultStats', // google
-  '#links_wrapper' // duckduckgo
-].join(',');
+  "#resultStats", // google
+  "#links_wrapper", // duckduckgo
+].join(",");
 
 var INPUT_FIELD_SELECTORS = [
-  '#lst-ib', // google
-  '#search_form_input' // duckduckgo
-].join(',');
+  "#lst-ib", // google
+  "#search_form_input", // duckduckgo
+].join(",");
 
 function onClick(event) {
   var link = event.target;
-  if(link.nodeName.toLowerCase() !== 'a')
-    return;
+  if (link.nodeName.toLowerCase() !== "a") return;
   var engineSource = ENGINES[link.engineName];
   var engineURL;
-  var engineParam = '';
-  if(Array.isArray(engineSource)) {
+  var engineParam = "";
+  if (Array.isArray(engineSource)) {
     engineParam = engineSource[1];
     engineURL = engineSource[0];
-  }
-  else if(typeof engineSource === 'string') {
+  } else if (typeof engineSource === "string") {
     engineURL = engineSource;
-  }
-  else {
+  } else {
     return;
   }
   var searchText = document.querySelector(INPUT_FIELD_SELECTORS);
-  if(engineURL && searchText && searchText.value.length > 0) {
+  if (engineURL && searchText && searchText.value.length > 0) {
     var url = engineURL + encodeURIComponent(searchText.value) + engineParam;
     window.open(url, "_self");
   }
 }
 
 function addCSSStyle() {
-  var cssStyle = document.createElement('style');
-  cssStyle.type = 'text/css';
+  var cssStyle = document.createElement("style");
+  cssStyle.type = "text/css";
   cssStyle.textContent = [
-    '#' + LINK_BOX_ID + ' {',
-    '	float: left;',
-    '	display: inline-block;',
-    '	padding-right: 10px;',
-    '	padding-bottom: 3px;',
-    '	color: rgb(115, 115, 115);' ,
-    '	font-family: Verdana,sans-serif;',
-    '	z-index: 10000;',
-    '}',
-    '#resultStats > #' + LINK_BOX_ID + ' {',
-    '	font-size: 13px;',
-    '}',
-    '#links_wrapper > #' + LINK_BOX_ID + ' {',
-    '	padding-left: 10px;',
-    '	font-size: 14px;',
-    '	line-height: 35px;',
-    '}'
-  ].join('\n');
+    "#" + LINK_BOX_ID + " {",
+    "	float: left;",
+    "	display: inline-block;",
+    "	padding-right: 10px;",
+    "	padding-bottom: 3px;",
+    "	color: rgb(115, 115, 115);",
+    "	font-family: Verdana,sans-serif;",
+    "	z-index: 10000;",
+    "}",
+    "#resultStats > #" + LINK_BOX_ID + " {",
+    "	font-size: 13px;",
+    "}",
+    "#links_wrapper > #" + LINK_BOX_ID + " {",
+    "	padding-left: 10px;",
+    "	font-size: 14px;",
+    "	line-height: 35px;",
+    "}",
+  ].join("\n");
   document.head.appendChild(cssStyle);
 }
 
-var createFragment = (function() {
-  var setCommon = function(node, sAttr, reason) {
-    var aAttr = sAttr.split(',');
-    aAttr.forEach(function(attr) {
-      var attrSource = /:=/.test(attr) ? attr.split(':=') : [attr, ''];
+var createFragment = (function () {
+  var setCommon = function (node, sAttr, reason) {
+    var aAttr = sAttr.split(",");
+    aAttr.forEach(function (attr) {
+      var attrSource = /:=/.test(attr) ? attr.split(":=") : [attr, ""];
       var attrName = attrSource[0].trim();
-      var attrValue = attrSource[1].trim().replace(/^(['"])([^\1]*)\1$/, '$2');
-      if(reason === 'a') {
+      var attrValue = attrSource[1].trim().replace(/^(['"])([^\1]*)\1$/, "$2");
+      if (reason === "a") {
         node.setAttribute(attrName, attrValue);
-      }
-      else {
+      } else {
         node[attrName] = attrValue;
       }
     });
     return node;
   };
-  var setAttr = function(node, sAttr) {
-    return setCommon(node, sAttr, 'a');
+  var setAttr = function (node, sAttr) {
+    return setCommon(node, sAttr, "a");
   };
-  var setProp = function(node, sAttr) {
-    return setCommon(node, sAttr, 'p');
+  var setProp = function (node, sAttr) {
+    return setCommon(node, sAttr, "p");
   };
-  var createFragmentInner = function(data, fragment) {
+  var createFragmentInner = function (data, fragment) {
     var node;
-    if(data.n) {
+    if (data.n) {
       node = document.createElement(data.n);
-      if(data.a)
-        node = setAttr(node, data.a);
-      if(data.p)
-        node = setProp(node, data.p);
-      if(data.s)
-        node.style.cssText = data.s;
+      if (data.a) node = setAttr(node, data.a);
+      if (data.p) node = setProp(node, data.p);
+      if (data.s) node.style.cssText = data.s;
       fragment.appendChild(node);
     }
-    if(data.c) {
-      data.c.forEach(function(cn) {
+    if (data.c) {
+      data.c.forEach(function (cn) {
         createFragmentInner(cn, node || fragment);
       });
     }
-    if(data.t && node) {
+    if (data.t && node) {
       node.appendChild(document.createTextNode(data.t));
     }
-    if(data.tc) {
+    if (data.tc) {
       fragment.appendChild(document.createTextNode(data.tc));
     }
-    if(data.dn) {
+    if (data.dn) {
       fragment.appendChild(data.dn);
     }
     return fragment;
   };
-  return function(data) {
+  return function (data) {
     var fragment = document.createDocumentFragment();
-    return createFragmentInner({c:data}, fragment);
+    return createFragmentInner({ c: data }, fragment);
   };
 })();
 
 function createLinkBox() {
   return createFragment([
-    {n:'div',a:'id:="'+LINK_BOX_ID+'"',c:(function() {
-      var domain = document.domain;
-      var aLinks = [{tc:SEARCH_ON}];
-      for(var engine in ENGINES) {
-        if(domain.indexOf(engine.toLowerCase()) !== -1)
-          continue;
-        aLinks.push(
-          {n:'a',a:'href:="javascript:void(0)"',p:'engineName:="'+engine+'"',t:engine},
-          {tc:ENGINES_SEPARATOR}
-        );
-      }
-      aLinks[aLinks.length-1] = {tc:SEARCH_ON_END};
-      return aLinks;
-    })()}
+    {
+      n: "div",
+      a: 'id:="' + LINK_BOX_ID + '"',
+      c: (function () {
+        var domain = document.domain;
+        var aLinks = [{ tc: SEARCH_ON }];
+        for (var engine in ENGINES) {
+          if (domain.indexOf(engine.toLowerCase()) !== -1) continue;
+          aLinks.push(
+            {
+              n: "a",
+              a: 'href:="javascript:void(0)"',
+              p: 'engineName:="' + engine + '"',
+              t: engine,
+            },
+            { tc: ENGINES_SEPARATOR }
+          );
+        }
+        aLinks[aLinks.length - 1] = { tc: SEARCH_ON_END };
+        return aLinks;
+      })(),
+    },
   ]);
 }
 
 function onDOMLoad() {
   var results = document.querySelector(PLACEHOLDER_SELECTORS);
-  if(!results)
-    return;
-  if(document.getElementById(LINK_BOX_ID))
-    return;
+  if (!results) return;
+  if (document.getElementById(LINK_BOX_ID)) return;
   addCSSStyle();
   var fragment = createLinkBox();
-  var linkBox = fragment.querySelector('#'+LINK_BOX_ID);
+  var linkBox = fragment.querySelector("#" + LINK_BOX_ID);
   linkBox.onclick = onClick;
   results.insertBefore(fragment, results.firstChild);
 }
 
 function addObserver(target, config, callback) {
-  var observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
+  var observer = new MutationObserver(function (mutations) {
+    mutations.forEach(function (mutation) {
       callback.call(this, mutation);
     });
   });
@@ -188,23 +185,27 @@ function removeObserver(observer) {
 }
 
 function getNodes() {
-  var _slice = Array.slice || Function.prototype.call.bind(Array.prototype.slice);
+  var _slice =
+    Array.slice || Function.prototype.call.bind(Array.prototype.slice);
   var trg = document.body;
   var params = { childList: true, subtree: true };
-  var getNode = function(mut) {
+  var getNode = function (mut) {
     var addedNodes = mut.addedNodes;
     var nodes = _slice(addedNodes);
-    nodes.forEach(function(node) {
-      if(node.querySelector &&
-         node.querySelector(PLACEHOLDER_SELECTORS)) {
+    nodes.forEach(function (node) {
+      if (node.querySelector && node.querySelector(PLACEHOLDER_SELECTORS)) {
         onDOMLoad();
       }
     });
   };
   var observer = addObserver(trg, params, getNode);
-  window.addEventListener('unload', function(event) {
-    removeObserver(observer);
-  }, false);
+  window.addEventListener(
+    "unload",
+    function (event) {
+      removeObserver(observer);
+    },
+    false
+  );
 }
 
 onDOMLoad();
