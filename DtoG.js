@@ -1,3 +1,21 @@
+
+
+// ==UserScript==
+// @name           Cross-linking DuckDuckgo <-> Google
+// @namespace      https://greasyfork.org/en/users/8981-buzz
+// @description    Adds Google link to DuckDuckGo results page and vice-versa.
+// @author         buzz
+// @version        0.4
+// @include        /^https?://duckduckgo\.com/.*$/
+// @include        /^https?://www\.google\.(am|az|by|co\.uz|com|com\.tr|com\.ua|de|ee|fi|ge|kg|kz|lt|lv|md|ru|tm)/.*$/
+// @include        https://encrypted.google.com/*
+// @noframes
+// @grant          none
+// @license        GPL version 3 or any later version; http://www.gnu.org/licenses/gpl.html
+// ==/UserScript==
+
+// Shamelessly ripped from https://greasyfork.org/en/scripts/8928-alternative-search-engines-2
+
 var SEARCH_ON = ' ';
 var SEARCH_ON_END = ' ';
 var LINK_BOX_ID = 'oeid-box';
@@ -191,4 +209,3 @@ function getNodes() {
 
 onDOMLoad();
 getNodes();
-
